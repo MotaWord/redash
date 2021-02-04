@@ -4,7 +4,7 @@ import logging
 import sys
 
 from redash.query_runner import *
-from redash.utils import json_dumps, json_loads, collect_query_parameters, mustache_render
+from redash.utils import json_dumps, json_loads,  mustache_render
 from redash import models
 from RestrictedPython import compile_restricted
 from RestrictedPython.Guards import safe_builtins, guarded_iter_unpack_sequence, guarded_unpack_sequence
@@ -252,15 +252,10 @@ class Python(BaseQueryRunner):
         """
         query = get_query(query_id)
         query_text = query.query_text
-        query_params = set(collect_query_parameters(query_text))
         if params is None:
             query_text = query.query_text
-            missing_params = set(query_params)
         else:
             query_text = mustache_render(query.query_text, params)
-            missing_params = set(query_params) - set(params.keys())
-        if len(missing_params) > 0:
-            raise Exception('Missing parameter value for: {}'.format(", ".join(missing_params)))
         data, error = query.data_source.query_runner.run_query(query_text, None)
         if error is not None:
             raise Exception(error)
