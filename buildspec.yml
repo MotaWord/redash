@@ -1,0 +1,43 @@
+version: 0.2
+
+env:
+  variables:
+    REPOSITORY_URI:
+    DEFAULT_IMAGE_TAG:
+    ECS_CONTAINER_NAME:
+    DOCKER_HUB_USERNAME:
+    DOCKER_HUB_KEY:
+
+phases:
+  pre_build:
+    commands:
+      # Prepare Docker build
+      - aws --version && docker version
+      - echo Logging in to Amazon ECR and Docker Hub...
+      # Log into Docker Hub
+      - docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_KEY}
+      # Log into AWS ECR
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin `echo $REPOSITORY_URI | cut -d'/' -f1`
+  build:
+    commands:
+      - echo Front build started at `date`
+      - npm ci
+      - npm run build
+      - echo Front build finished at `date`
+      - echo Docker build started at `date`
+      - docker build -t ${REPOSITORY_URI}:${DEFAULT_IMAGE_TAG:=latest} -t ${REPOSITORY_URI}:${COMMIT_TAG:=latest} .
+      - echo Docker build finished at `date`
+  post_build:
+    commands:
+      - echo Builds completed at `date`
+      - echo Pushing the Docker images...
+      - docker push ${REPOSITORY_URI}:${DEFAULT_IMAGE_TAG:=latest}
+      - docker push ${REPOSITORY_URI}:${COMMIT_TAG:=latest}
+      - printf '[{"name":"%s","imageUri":"%s"}]' ${ECS_CONTAINER_NAME} $REPOSITORY_URI:${COMMIT_TAG:=latest} > imagedefinitions.json
+artifacts:
+  files:
+    - imagedefinitions.json
+cache:
+  paths:
+    - "/root/.cache/pip/**/*"
+    - "node_modules/**/*"
