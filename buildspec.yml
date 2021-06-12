@@ -20,10 +20,6 @@ phases:
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin `echo $REPOSITORY_URI | cut -d'/' -f1`
   build:
     commands:
-      - echo Front build started at `date`
-      - npm ci
-      - npm run build
-      - echo Front build finished at `date`
       - echo Docker build started at `date`
       - docker build -t ${REPOSITORY_URI}:${DEFAULT_IMAGE_TAG:=latest} -t ${REPOSITORY_URI}:${COMMIT_TAG:=latest} .
       - echo Docker build finished at `date`
