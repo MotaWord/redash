@@ -3,6 +3,7 @@ from flask import session, request
 from flask_login import current_user
 from flask_talisman import talisman
 from flask_wtf.csrf import CSRFProtect, generate_csrf
+from flask_cors import CORS
 
 
 from redash import settings
@@ -28,6 +29,7 @@ def init_app(app):
     app.config["WTF_CSRF_CHECK_DEFAULT"] = False
     app.config["WTF_CSRF_SSL_STRICT"] = False
     app.config["WTF_CSRF_TIME_LIMIT"] = settings.CSRF_TIME_LIMIT
+    CORS(app)
 
     @app.after_request
     def inject_csrf_token(response):

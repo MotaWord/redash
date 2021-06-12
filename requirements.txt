@@ -17,6 +17,7 @@ flask-mail==0.9.1
 flask-talisman==0.7.0
 Flask-Limiter==0.9.3
 Flask-WTF==0.14.3
+flask-cors==3.0.10
 passlib==1.7.1
 aniso8601==8.0.0
 blinker==1.4
